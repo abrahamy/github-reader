@@ -9,7 +9,9 @@ readme = "README.md"
 requires-python = ">=3.10,<3.13" # deepset cloud at the moment uses 3.10
 license = "MIT"
 keywords = []
-authors = [{ name = "deepset", email = "platform-engineering-exploration@deepset.de" }]
+authors = [
+  { name = "deepset", email = "platform-engineering-exploration@deepset.de" },
+]
 classifiers = [
   "Development Status :: 4 - Beta",
   "Programming Language :: Python",
@@ -19,9 +21,7 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
 ]
-dependencies = [
-  "haystack-ai>=2.0.0"
-]
+dependencies = ["haystack-ai>=2.0.0"]
 dynamic = ["version"]
 
 [tool.hatch.version]
@@ -31,9 +31,7 @@ path = "src/dc_custom_component/__about__.py"
 python = ["3.10", "3.11"]
 
 [tool.hatch.envs.default]
-dependencies = [
-  "pytest==7.4.2",
-]
+dependencies = ["pytest==7.4.2"]
 
 [tool.hatch.envs.default.scripts]
 tests = "pytest -vv tests"
@@ -53,11 +51,7 @@ list-windows = "curl --request GET --url https://api.cloud.deepset.ai/api/v2/cus
 [tool.hatch.envs.code-quality]
 python = "3.11"
 detached = true
-dependencies = [
-  "black==23.9.1",
-  "mypy==1.9.0",
-  "ruff==0.3.2",
-]
+dependencies = ["black==23.9.1", "mypy==1.9.0", "ruff==0.3.2"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dc_custom_component"]
@@ -72,3 +66,10 @@ warn_unused_configs = true
 ignore_missing_imports = true
 disallow_incomplete_defs = true
 disallow_untyped_defs = true
+
+[tool.ruff]
+line-length = 120
+force-exclude = true
+
+[tool.ruff.lint]
+extend-select = ["I"]
