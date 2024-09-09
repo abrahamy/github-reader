@@ -64,7 +64,9 @@ class GitHubRepositoryReader:
         )
 
     @component.output_types(documents=list[Document])
-    def run(self, repository: str | None = None, ref: str | None = None) -> dict[str, list[Document]]:
+    def run(
+        self, repository: str | None = None, ref: str | None = None
+    ) -> dict[str, list[Document]]:
         ref = ref or self.ref
         owner, repo = self.owner, self.repo
 
@@ -85,7 +87,9 @@ class GitHubRepositoryReader:
             response = self.http_client.get(endpoint_url)
             response.raise_for_status()
         except HTTPError as ex:
-            raise APIError(f"Failed to download repository content (url: {endpoint_url}). Reason: {ex!s}.") from ex
+            raise APIError(
+                f"Failed to download repository content (url: {endpoint_url}). Reason: {ex!s}."
+            ) from ex
 
         documents = []
 
