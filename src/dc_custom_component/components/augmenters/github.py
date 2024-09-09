@@ -1,4 +1,5 @@
 import io
+from dataclasses import dataclass
 from pathlib import Path
 from uuid import uuid4
 from zipfile import ZipFile
@@ -18,6 +19,20 @@ class APIError(GitHubError):
 
 class RepositoryNameError(GitHubError):
     pass
+
+
+@dataclass
+class InitParams:
+    access_token: str
+    repository: str
+    file_extensions: list[str]
+    file_encoding: str = "utf-8"
+    ref: str = "main"
+
+    @property
+    def token(self) -> Secret:
+        """Returns the access token as a Haystack secret"""
+        return Secret.from_token(self.access_token)
 
 
 @component
@@ -115,3 +130,64 @@ class GitHubRepositoryReader:
                 documents.append(doc)
 
         return documents
+
+
+@component
+class GitHubUnsafeRepositoryReader:
+    """
+    Retrieve the files in a GitHub repository and return a list of documents.
+
+    WARNING: Use `GitHubRepositoryReader` instead due to the unsafe passing of secrets.
+    This can be used with a GitHub token with access to only a public repository.
+    """
+
+    def __init__(
+        self,
+        access_token: str,
+        repository: str,
+        file_extensions: list[str],
+        file_encoding: str = "utf-8",
+        ref: str = "main",
+    ) -> None:
+        """Initializes the component.
+
+        :param access_token: GitHub API access token
+        :param repository: GitHub repository name in the form "owner/repo"
+        :param file_extensions: File extensions
+        :param file_encoding: The default file encoding for reading the files in the repository, defaults to "utf-8"
+        :param ref: The branch or tag to read from, defaults to "main"
+        :raises RepositoryNameError: Raised when the repository name is invalid.
+        """
+        self.params = InitParams(
+            access_token=access_token,
+            repository=repository,
+            file_extensions=file_extensions,
+            file_encoding=file_encoding,
+            ref=ref,
+        )
+        self.delegate: GitHubRepositoryReader | None = None
+
+    def warm_up(self) -> None:
+        """Ensure component is in a useable state"""
+        self.delegate = GitHubRepositoryReader(
+            access_token=self.params.token,
+            repository=self.params.repository,
+            file_extensions=self.params.file_extensions,
+            file_encoding=self.params.file_encoding,
+            ref=self.params.ref,
+        )
+
+    @component.output_types(documents=list[Document])
+    def run(
+        self, repository: str | None = None, ref: str | None = None
+    ) -> dict[str, list[Document]]:
+        if self.delegate is None:
+            raise ValueError(
+                "Component was not warmed up. Call `warm_up()` before running the component."
+            )
+
+        result: dict[str, list[Document]] = self.delegate.run(
+            repository=repository, ref=ref
+        )
+
+        return result
