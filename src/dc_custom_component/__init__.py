@@ -1,4 +1,4 @@
-from dc_custom_component.components.augmenters.github import (
+from dc_custom_component.components.fetchers.github import (
     GitHubRepositoryReader,
     GitHubUnsafeRepositoryReader,
 )
